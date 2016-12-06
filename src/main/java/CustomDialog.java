@@ -42,7 +42,7 @@ class CustomDialog{
         timeDueAP.addItem("PM");
 //        endTimeAP.addItem("AM");
 //        endTimeAP.addItem("PM");
-        timeDue.addItem(12 + ":00");
+        timeDue.addItem("12:00");
         for (int i = 1; i < 12; i++) {
             timeDue.addItem(i + ":00");
 //            endTime.addItem(i);

@@ -22,22 +22,22 @@ public class ScheduleForm extends JFrame{
     private JTextArea txtAreaDescription;
     private JButton btnUpdateEvent;
     private JButton btnEnterEvent;
-    private DatabaseEditor mainDB = new DatabaseEditor("test.db");// todo change to final db name
+
+    private DatabaseEditor mainDB; // Variable to store access to the mainDB
     private JCalendar calendar;
-    private String hour;
+    private int hour;
     private String periodOfDay;
 
-    ScheduleForm() throws ClassNotFoundException {
+    ScheduleForm(final DatabaseEditor mainDB) {
+        this.mainDB = mainDB; // Set this instances mainDB to equal the passed database
         setContentPane(rootPanel);
         pack(); // Pack gui contents
         setTitle("Work Scheduler"); // Set title
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); // End program on close
         setVisible(true); // Make window visible
 
-        File selectedFile; // Create variable to store the file path in
-        dbCreate(); // Create database
-        dbTableCreate(); // Create table
-        testInformation();
+//        File selectedFile; // Create variable to store the file path in
+        testInformation(); // Populate the fields with test information
 //        dbAddEvent("Java", "11/28/2016",  DateTime.now(), "Working on programming"); // Add test Event
 //        dbDeleteEvent(10); // Delete event test
         dbReadEvent(-1); // Test read event
@@ -82,19 +82,6 @@ public class ScheduleForm extends JFrame{
         });
     }
 
-    public void dbCreate(){ // Method to create the db
-        mainDB.createDatabase();
-    }
-
-    public void dbTableCreate(){ // Method to create the main table
-        mainDB.createTables();
-    }
-
-//    public void dbAddEvent(String className, String eventDate, DateTime dueTime, String eventDescription){ // Don't use this method
-//
-//        mainDB.addEvent(className, eventDate, dueTime, eventDescription); // Send event info to db
-//    }
-
     public void dbDeleteEvent(int eventID){ // Method to delete an event using the Event_ID
         mainDB.deleteEvent(eventID);
     }
@@ -106,8 +93,9 @@ public class ScheduleForm extends JFrame{
     public void showDateSelectDialog(){ // todo Return date selected
         CustomDialog dateSelectDialog = new CustomDialog(); // Create dialog for selecting date and time
         calendar = dateSelectDialog.getCalendar();
-        hour = dateSelectDialog.timeDue.toString();
+        hour = dateSelectDialog.timeDue.getSelectedIndex();
         periodOfDay = dateSelectDialog.timeDueAP.toString();
+
         System.out.println(calendar.getDate()); // Shows the selected date from the JCalendar
     }
 

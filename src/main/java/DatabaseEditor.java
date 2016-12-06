@@ -2,6 +2,7 @@ import org.freixas.jcalendar.JCalendar;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeField;
 import org.joda.time.DateTimeFieldType;
+import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -20,7 +21,7 @@ public class DatabaseEditor {
 
     DatabaseEditor(String databaseName) throws ClassNotFoundException{
         databaseLocation = "jdbc:sqlite:src/main/resources/" + databaseName;
-        Class.forName("org.sqlite.JDBC");
+        Class.forName("org.sqlite.JDBC"); // Loads the class
     }
 
     // http://www.sqlitetutorial.net/sqlite-java/create-database/
@@ -90,11 +91,16 @@ public class DatabaseEditor {
 
     // http://www.sqlitetutorial.net/sqlite-insert/
     public void addEvent(String className, Object[] timeDue, String eventDescription){ // Method to add an event to the db
-        DateTime dt = new DateTime(((JCalendar) timeDue[0]).getDate());
-        dt.hourOfDay().setCopy((String) timeDue[1]);
-        if (timeDue[3].equals("PM")){
-            dt.hourOfDay().addToCopy(12);
+        // gets the date from the JCalendar stored in the list of objects
+        DateTime dt = new DateTime(((JCalendar) timeDue[0]).getDate()) // Set date
+        .withMillisOfDay(0) // Set Milliseconds to 0
+        .withHourOfDay((Integer) timeDue[1]); // Set hour of day
+        if (timeDue[2].equals("PM")){ // If PM is selected
+            dt = dt.hourOfDay().addToCopy(12); // Add 12 hours
         }
+
+        System.out.println(dt.toString()); // Test
+//        dt.hourOfDay().addToCopy((Integer) timeDue[1]); // Add
         String url = databaseLocation;
         try{
             Connection c = DriverManager.getConnection(url);
@@ -117,7 +123,7 @@ public class DatabaseEditor {
         Connection c = null;
         try{
             c = DriverManager.getConnection(url);
-            String sql = "DELETE FROM ScheduleTable WHERE Event_ID = " + eventID + ";";
+            String sql = "DELETE FROM ScheduleTable WHERE Event_ID = " + eventID + ";"; // todo Prepared statement
             Statement stmt = c.createStatement();
             stmt.execute(sql);
             c.close(); // Close connection
