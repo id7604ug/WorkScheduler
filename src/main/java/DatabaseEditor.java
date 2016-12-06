@@ -93,12 +93,12 @@ public class DatabaseEditor {
     public void addEvent(String className, Object[] timeDue, String eventDescription){ // Method to add an event to the db
         // gets the date from the JCalendar stored in the list of objects
         DateTime dt = new DateTime(((JCalendar) timeDue[0]).getDate()) // Set date
-        .withMillisOfDay(0) // Set Milliseconds to 0
-        .withHourOfDay((Integer) timeDue[1]); // Set hour of day
-        if (timeDue[2].equals("PM")){ // If PM is selected
+                .withMillisOfDay(0) // Set Milliseconds to 0
+                .withHourOfDay((Integer) timeDue[1]); // Set hour of day
+
+        if (((String) timeDue[2]).equalsIgnoreCase("pm")){ // If PM is selected
             dt = dt.hourOfDay().addToCopy(12); // Add 12 hours
         }
-
         System.out.println(dt.toString()); // Test
 //        dt.hourOfDay().addToCopy((Integer) timeDue[1]); // Add
         String url = databaseLocation;

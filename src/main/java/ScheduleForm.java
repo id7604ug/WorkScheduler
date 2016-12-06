@@ -62,17 +62,21 @@ public class ScheduleForm extends JFrame{
         });
 
         btnSelectDateTime.addActionListener(new ActionListener() { // Listener for btnSelectDateTime
-            public void actionPerformed(ActionEvent e) { // todo Retrieve date from the dialog
+            public void actionPerformed(ActionEvent e) {
                 showDateSelectDialog();
             }
         });
         btnEnterEvent.addActionListener(new ActionListener() { // Create event Button
             public void actionPerformed(ActionEvent e) {
-                Object[] info = new Object[3];
-                info[0] = calendar;
-                info[1] = hour;
-                info[2] = periodOfDay;
-                mainDB.addEvent(tbxClassName.getText(), info, txtAreaDescription.getText()); // todo Add event using user input
+                if (calendar != null) {
+                    Object[] info = new Object[3];
+                    info[0] = calendar;
+                    info[1] = hour;
+                    info[2] = periodOfDay;
+                    mainDB.addEvent(tbxClassName.getText(), info, txtAreaDescription.getText()); // todo Add event using user input
+                } else {
+                    messageBoxDialog("Please select a time using the Select Date and Time button");
+                }
             }
         });
         btnUpdateEvent.addActionListener(new ActionListener() { // Listener for Update An Event Button
@@ -94,8 +98,7 @@ public class ScheduleForm extends JFrame{
         CustomDialog dateSelectDialog = new CustomDialog(); // Create dialog for selecting date and time
         calendar = dateSelectDialog.getCalendar();
         hour = dateSelectDialog.timeDue.getSelectedIndex();
-        periodOfDay = dateSelectDialog.timeDueAP.toString();
-
+        periodOfDay = dateSelectDialog.timeDueAP.getSelectedItem().toString();
         System.out.println(calendar.getDate()); // Shows the selected date from the JCalendar
     }
 
