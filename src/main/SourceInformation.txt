@@ -1,0 +1,12 @@
+JCalender:
+http://flib.sourceforge.net/JCalendar/doc/index.html
+https://sourceforge.net/projects/flib/files/
+
+SQLite:
+http://www.tutorialspoint.com/sqlite/sqlite_java.htm
+
+Customize JOptionPane Dialog:
+http://stackoverflow.com/questions/12234850/customize-joptionpane-dialog
+
+Jodatime:
+http://www.joda.org/joda-time/
