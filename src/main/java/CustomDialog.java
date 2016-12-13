@@ -21,9 +21,6 @@ class CustomDialog{
     String timeText;
 
     public CustomDialog() {
-        displayGUI();
-    }
-    public void displayGUI() {
         JOptionPane.showConfirmDialog(null, getPanel(), "Date and Time : ", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
     }

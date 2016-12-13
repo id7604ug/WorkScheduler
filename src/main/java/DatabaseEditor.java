@@ -1,15 +1,11 @@
 import org.freixas.jcalendar.JCalendar;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeField;
-import org.joda.time.DateTimeFieldType;
-import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.sql.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.util.ArrayList;
 
 
 /**
@@ -18,6 +14,7 @@ import java.sql.DriverManager;
 
 public class DatabaseEditor {
     public static String databaseLocation;
+    DateTimeFormatter fmtDate = DateTimeFormat.forPattern("d MMMM, yyyy");
 
     DatabaseEditor(String databaseName) throws ClassNotFoundException{
         databaseLocation = "jdbc:sqlite:src/main/resources/" + databaseName;
@@ -45,7 +42,7 @@ public class DatabaseEditor {
                         c.close();
                     }
                 } catch (SQLException ex) {
-                    System.out.println("There was an issue finding the database");
+                    System.out.println("There was an issue closing the database");
                     System.out.println(ex.getMessage());
                 }
             }
@@ -99,7 +96,7 @@ public class DatabaseEditor {
         if (((String) timeDue[2]).equalsIgnoreCase("pm")){ // If PM is selected
             dt = dt.hourOfDay().addToCopy(12); // Add 12 hours
         }
-        System.out.println(dt.toString()); // Test
+        System.out.println(dt.toString()); // todo Test
 //        dt.hourOfDay().addToCopy((Integer) timeDue[1]); // Add
         String url = databaseLocation;
         try{
@@ -118,23 +115,41 @@ public class DatabaseEditor {
     } // Method to add an event to the db
 
     // http://www.sqlitetutorial.net/sqlite-delete/
-    public void deleteEvent(int eventID){ // Method to delete an event using it's Event_ID
+    public void deleteEvent(String eventID){ // Method to delete an event using it's Event_ID
         String url = databaseLocation;
         Connection c = null;
         try{
             c = DriverManager.getConnection(url);
-            String sql = "DELETE FROM ScheduleTable WHERE Event_ID = " + eventID + ";"; // todo Prepared statement
-            Statement stmt = c.createStatement();
-            stmt.execute(sql);
+            PreparedStatement prepSQL = c.prepareStatement("DELETE FROM ScheduleTable WHERE Event_ID = ?;"); // Prepared statement
+            prepSQL.setString(1, eventID); // Set value of Event_ID to delete
+//            String sql = " " + eventID + ";"; // todo Prepared statement
+//            Statement stmt = c.createStatement();
+            prepSQL.execute(); // Execute delete statement
             c.close(); // Close connection
+            System.out.println("Row was deleted successfully");
         } catch (SQLException e){
             System.out.println(e.getMessage());
             System.out.println("There was an issue finding or deleting your event.");
         }
     } // Method to delete an event using it's Event_ID
 
-    public void updateEvent(int eventID){ // Method to update an event in the database
-
+    // http://www.sqlitetutorial.net/sqlite-update/
+    public void updateEvent(String eventID, String className, String timeDue, String eventDescription){ // Method to update an event in the database
+        String url = databaseLocation;
+        Connection c = null;
+        try{
+            c = DriverManager.getConnection(url);
+            PreparedStatement prepSQL = c.prepareStatement("UPDATE ScheduleTable SET Class_Name = ?, Event_Description = ? WHERE Event_ID = ?");
+            prepSQL.setString(1, className);
+            prepSQL.setString(2, eventDescription);
+            prepSQL.setString(3, eventID);
+            prepSQL.execute();
+            c.close();
+            System.out.println("Event ID " + eventID + " has been updated");
+        } catch (SQLException e) {
+            System.out.println("There was a problem accessing the database");
+            System.out.println(e.getMessage());
+        }
     }
 
     public void readEvent(int eventID) {
@@ -144,7 +159,7 @@ public class DatabaseEditor {
         Connection c = null;
         try{
             c = DriverManager.getConnection(url);
-            PreparedStatement prepSQL = c.prepareStatement("SELECT * FROM ScheduleTable WHERE Event_ID=?");
+            PreparedStatement prepSQL = c.prepareStatement("SELECT * FROM ScheduleTable WHERE Event_ID=?;");
             prepSQL.setString(1, eventIDString); // Set value of Event_ID to query for
             ResultSet rs = prepSQL.executeQuery(); // Execute the query
             if (rs.next()){ // In case a row is not found
@@ -158,12 +173,54 @@ public class DatabaseEditor {
         }
     }
 
-    public void findByClassName(String className){ // Method to find events by class name
-
+    public ArrayList<String> findByClassName(String className){ // Method to find events by class name
+        ArrayList<String> resultList = new ArrayList<String>();
+        String url = databaseLocation;
+        Connection c = null;
+        try{
+            c = DriverManager.getConnection(url);
+            PreparedStatement prepSQL;
+            if (!className.equalsIgnoreCase("")) {
+                prepSQL = c.prepareStatement("SELECT * FROM ScheduleTable WHERE Class_Name = ?;");
+                prepSQL.setString(1, className); // Set value of Class_Name to query for
+            } else {
+                prepSQL = c.prepareStatement("SELECT * FROM ScheduleTable;");
+                System.out.println("Reading all data");
+            }
+            ResultSet rs = prepSQL.executeQuery(); // Execute query
+            while(rs.next()){
+//                System.out.println(rs.getString(1) + rs.getString(2) + rs.getString(3) + rs.getString(4)); // todo Test
+                resultList.add(rs.getString(1) + ";" + rs.getString(2) + ";" + rs.getString(3) + ";" + rs.getString(4));
+            }
+            c.close(); // Close db connection
+        } catch (SQLException e){
+            System.out.println("There was an issue connecting to the database"); // todo Make message box
+        }
+        return resultList;
     }
 
-    public void findByDueDate(DateTime dueDate){ // Method to find events by due date
-
+    public ArrayList<String> findByDueDate(String dueDate){ // Method to find events by due date
+        ArrayList<String> resultList = new ArrayList<String>();
+        String url = databaseLocation;
+        Connection c = null;
+        try{
+            c = DriverManager.getConnection(url);
+            PreparedStatement prepSQL;
+            prepSQL = c.prepareStatement("SELECT * FROM ScheduleTable;");
+            System.out.println("Reading all data");
+            ResultSet rs = prepSQL.executeQuery(); // Execute query
+            while(rs.next()){
+//                System.out.println(rs.getString(1) + rs.getString(2) + rs.getString(3) + rs.getString(4)); // todo Test
+                DateTime currentRowDate = new DateTime(rs.getString(3));
+                if (currentRowDate.toString(fmtDate).equalsIgnoreCase(dueDate)) {
+                    resultList.add(rs.getString(1) + ";" + rs.getString(2) + ";" + rs.getString(3) + ";" + rs.getString(4));
+                }
+            }
+            c.close(); // Close db connection
+        } catch (SQLException e){
+            System.out.println("There was an issue connecting to the database"); // todo Make message box
+        }
+        return resultList;
     }
 
     public void showWholeDatabase(){
@@ -182,4 +239,6 @@ public class DatabaseEditor {
             System.out.println(e.getMessage());
         }
     }
+
+
 }
